@@ -1,4 +1,4 @@
 Butler
 ======
 
-** TODO: Add description **
+ChaDev Slack bot.
