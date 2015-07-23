@@ -1,12 +1,23 @@
 defmodule Butler do
-
-  client_id = "xoxb-8072126112-SO33tzVKXOjuNnd4BLsb6d1r"
-  team = "chadev"
-  state = "crunk"
-  url = "htpps://slack.com/oauth/authorize?client_id"<>client_id<>"&team="<>team<>"&state="<>state
-  IO.puts url
   HTTPoison.start
-  response = HTTPoison.get! "http://ip.jsontest.com/"
-  
+
+  # client_id = System.get_env BUTLER_KEY
+  # team = "chadev"
+  # state = "crunk"
+  start_url = "https://slack.com/api/rtm.start?token="<>client_id
+
+  case HTTPoison.get(start_url) do
+    {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+      Butler.get_url body
+      # IO.puts body
+    {:error, %HTTPoison.Error{reason: reason}} ->
+      IO.inspect reason
+  end
+
   #ip_pack = Poison.Parser.parse!()
+
+  def get_url body do
+    %{"url" => url } = Poison.Parser.parse! body
+    IO.puts url
+  end
 end
