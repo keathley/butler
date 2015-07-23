@@ -1,7 +1,7 @@
 defmodule Butler do
   HTTPoison.start
 
-  # client_id = System.get_env BUTLER_KEY
+  client_id = System.get_env "BUTLER_KEY"
   # team = "chadev"
   # state = "crunk"
   start_url = "https://slack.com/api/rtm.start?token="<>client_id
