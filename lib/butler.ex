@@ -1,45 +1,59 @@
 defmodule Butler do
+  @slack_token Application.get_env(:slack, :api_key)
+  @user_agent [ {"User-agent", "Butler the slack bot"} ]
 
-  def main(args) do
-    HTTPoison.start
-
-    options = args |> parse_args
-    token = options[:token]
-    start_url = "https://slack.com/api/rtm.start?token=#{token}"
-
-    case HTTPoison.get(start_url) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
-        socket = body |> get_url |> connect_to_socket
-        read_from_socket(socket)
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        IO.inspect reason
-    end
+  def main do
+    start_url
+    |> HTTPoison.get(@user_agent)
+    |> handle_response
+    |> extract_url
+    |> connect_to_socket
+    |> read_from_socket
   end
 
-  def parse_args([]) do
-    IO.puts "Required a Slack Bot Token"
+  def start_url do
+    "https://slack.com/api/rtm.start?token=#{@slack_token}"
   end
 
-  def parse_args(args) do
-    { options, _, _} = OptionParser.parse(args,
-      switches: [name: :string]
-    )
-
-    options
+  def handle_response({:ok, %HTTPoison.Response{status_code: 200, body: body}}) do
+    body
   end
 
-  defp get_url body do
+  def handle_response({:error, %HTTPoison.Error{reason: reason}}) do
+    IO.inspect reason
+    System.halt(2)
+  end
+
+  def extract_url(body) do
     %{"url" => url } = Poison.Parser.parse! body
-    String.slice(url, 6..-1) # strip the scheme
+    url
   end
 
-  defp connect_to_socket url do
+  defp connect_to_socket(url) do
     IO.puts "Connecting to #{url}"
-    Socket.Web.connect! url
+    Socket.connect!(url)
   end
 
-  defp read_from_socket socket do
-    IO.puts(Socket.Web.recv!(socket))
+  defp read_from_socket(socket) do
+    case Socket.Web.recv!(socket) do
+      { :text, resp } ->
+        IO.puts resp
+        resp |> Poison.Parser.parse! |> handle_slack_event(socket)
+      { :ping, _} ->
+        IO.puts "Ping"
+      { _, resp } ->
+        IO.puts "Unknown message: #{resp}"
+      _ ->
+        IO.puts "We're screwed"
+    end
+
+    read_from_socket(socket)
   end
+
+  defp handle_slack_event(%{"type" => "message", "text" => text, "channel" => channel}, socket) do
+    IO.puts "Message in #{channel}: #{text}"
+    socket |> Socket.Web.send! { :text, ~s({"type": "message", "channel": "#{channel}", "text": "#{text} to you to"}) }
+  end
+
+  defp handle_slack_event(_, msg), do: msg
 end
