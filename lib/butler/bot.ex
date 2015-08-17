@@ -1,18 +1,15 @@
 defmodule Butler.Bot do
-  use GenServer
+  @behaviour :websocket_client_handler
 
   def start_link(opts \\ []) do
     {:ok, json} = Butler.Rtm.start
-
-    GenServer.start_link(__MODULE__, json, opts)
+    url = String.to_char_list(json.url)
+    :websocket_client.start_link(url, __MODULE__, json)
   end
 
-  def init(json) do
-    IO.puts "init"
-    # IO.inspect json
-    # |> connect_to_socket
-    # |> read_from_socket
+  def init(json, socket) do
     slack = %{
+      socket: socket,
       me: json.self,
       team: json.team,
       channels: json.channels,
@@ -20,41 +17,44 @@ defmodule Butler.Bot do
       users: json.users
     }
 
-    [user | rest ] = slack.users
-
-    IO.inspect user 
     {:ok, slack}
   end
 
-  def extract_url(body) do
-    IO.puts body
+  def websocket_info(:start, _connection, slack) do
+    IO.puts "Starting"
+    {:ok, slack}
   end
 
-  defp connect_to_socket(url) do
-    IO.puts "Connecting to #{url}"
-    Socket.connect!(url)
+  def websocket_terminate(reason, _connection, slack) do
+    IO.puts "Terminated"
+    IO.inspect reason
+    {:error, slack}
   end
 
-  defp read_from_socket(socket) do
-    case Socket.Web.recv!(socket) do
-      { :text, resp } ->
-        IO.puts resp
-        resp |> Poison.Parser.parse! |> handle_slack_event(socket)
-      { :ping, _} ->
-        IO.puts "Ping"
-      { _, resp } ->
-        IO.puts "Unknown message: #{resp}"
-      _ ->
-        IO.puts "We're screwed"
-    end
-
-    read_from_socket(socket)
+  def websocket_handle({:ping, msg}, _connection, slack) do
+    IO.puts "Ping"
+    {:reply, {:pong, msg}, slack}
   end
 
-  defp handle_slack_event(%{"type" => "message", "text" => text, "channel" => channel}, socket) do
-    IO.puts "Message in #{channel}: #{text}"
-    socket |> Socket.Web.send! { :text, ~s({"type": "message", "channel": "#{channel}", "text": "#{text} to you to"}) }
+  def websocket_handle({:text, msg}, _connection, slack) do
+    message = Poison.Parser.parse!(msg, keys: :atoms)
+    handle_message(message, slack)
+    # {:ok, slack}
   end
 
-  defp handle_slack_event(_, msg), do: msg
+  defp handle_message(message = %{type: "message", text: "Hello Butler"}, slack) do
+    {:reply, {:text, encode("Top of the morning", message.channel)}, slack}
+    # send_message("Top of the morning", message.channel, slack)
+  end
+
+  defp handle_message(_message, slack), do: {:ok, slack}
+
+  defp encode(text, channel) do
+    Poison.encode!(%{ type: "message", text: text, channel: channel })
+  end
+
+  def send_message(text, channel, slack) do
+    msg = Poison.encode!(%{ type: "message", text: text, channel: channel })
+    :websocket_client.send({:text, msg}, slack.socket)
+  end
 end
