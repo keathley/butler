@@ -3,4 +3,5 @@
   "idna": {:hex, :idna, "1.0.2"},
   "poison": {:hex, :poison, "1.4.0"},
   "socket": {:hex, :socket, "0.3.0"},
-  "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5"}}
+  "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5"},
+  "websocket_client": {:git, "git://github.com/jeremyong/websocket_client.git", "f6892c8b55004008ce2d52be7d98b156f3e34569", []}}

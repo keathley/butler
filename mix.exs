@@ -15,7 +15,10 @@ defmodule Butler.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [ applications: [ :logger, :httpoison ] ]
+    [
+      applications: [ :logger, :httpoison ],
+      mod: {Butler, []}
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -30,8 +33,8 @@ defmodule Butler.Mixfile do
   defp deps do
     [
       {:poison, "~> 1.4.0"},
-      {:socket, "~> 0.3.0"},
-      {:httpoison, "~> 0.7"}
+      {:httpoison, "~> 0.7"},
+      {:websocket_client, github: "jeremyong/websocket_client"}
     ]
   end
 end
