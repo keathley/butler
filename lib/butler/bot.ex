@@ -41,31 +41,16 @@ defmodule Butler.Bot do
     handle_message(message, slack)
   end
 
-  def hear("Hello Butler") do
-    {:reply, "Yo bitch"}
-  end
-
-  def hear("Top of the morning") do
-    {:reply, "Get out of here"}
-  end
-
-  def hear("cowsay " <> say) do
-    
-  end
-
-  def hear(_) do
-    {:noreply}
-  end
 
   defp handle_message(message = %{type: "message", text: text}, slack) do
     IO.puts "incoming text #{text}"
-    case hear(text) do
+    case Butler.Ears.hear(text) do
       {:reply, response} ->
-        IO.puts "Handled #{response}"
+        IO.puts "Handled #{text} with #{response}"
         {:reply, {:text, encode(response, message.channel)}, slack}
       {:noreply} ->
-        IO.puts "Didn't know how to reply to #{text}"
-        {:noreply, slack}
+        IO.puts "Ignoring #{text} with :ok}"
+        {:ok, slack}
     end
   end
 
