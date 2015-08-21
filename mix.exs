@@ -3,11 +3,13 @@ defmodule Butler.Mixfile do
 
   def project do
     [app: :butler,
+     description: "A simple elixir robot to help you get things done",
      version: "0.0.1",
      elixir: "~> 1.0",
      escript: [main_module: Butler],
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     package: package,
      deps: deps]
   end
 
@@ -36,5 +38,11 @@ defmodule Butler.Mixfile do
       {:httpoison, "~> 0.7"},
       {:websocket_client, github: "jeremyong/websocket_client"}
     ]
+  end
+
+  defp package do
+    [contributors: ["Chris Keathley"],
+      licenses: ["MIT"],
+      links: %{github: "https://github.com/butlerbot/butler"}]
   end
 end
