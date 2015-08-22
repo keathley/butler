@@ -39,12 +39,19 @@ defmodule Butler.Bot do
   def websocket_handle({:text, msg}, _connection, slack) do
     message = Poison.Parser.parse!(msg, keys: :atoms)
     handle_message(message, slack)
-    # {:ok, slack}
   end
 
-  defp handle_message(message = %{type: "message", text: "Hello Butler"}, slack) do
-    {:reply, {:text, encode("Top of the morning", message.channel)}, slack}
-    # send_message("Top of the morning", message.channel, slack)
+
+  defp handle_message(message = %{type: "message", text: text}, slack) do
+    IO.puts "incoming text #{text}"
+    case Butler.Ears.hear(text) do
+      {:reply, response} ->
+        IO.puts "Handled #{text} with #{response}"
+        {:reply, {:text, encode(response, message.channel)}, slack}
+      {:noreply} ->
+        IO.puts "Ignoring #{text} with :ok}"
+        {:ok, slack}
+    end
   end
 
   defp handle_message(_message, slack), do: {:ok, slack}
