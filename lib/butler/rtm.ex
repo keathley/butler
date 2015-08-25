@@ -4,9 +4,7 @@ defmodule Butler.Rtm do
   @url "https://slack.com/api/rtm.start?token=#{@slack_token}"
 
   def start do
-    IO.puts @url
-    HTTPoison.get(@url, @user_agent)
-    |> handle_response
+    HTTPoison.get(@url, @user_agent) |> handle_response
   end
 
   defp handle_response({:ok, %HTTPoison.Response{body: body}}) do

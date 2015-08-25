@@ -17,7 +17,8 @@ defmodule Butler.Bot do
       users: json.users
     }
 
-    GenEvent.add_handler(events, Butler.Plugin, [])
+    GenEvent.add_handler(events, Butler.Plugins.Cowsay, [])
+    GenEvent.add_handler(events, Butler.Plugins.TestCount, [])
 
     {:ok, %{slack: slack, events: events}}
   end
