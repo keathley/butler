@@ -5,9 +5,12 @@ defmodule Butler.Supervisor do
     Supervisor.start_link(__MODULE__, :ok)
   end
 
+  @manager_name Butler.EventManager
+
   def init(:ok) do
     children = [
-      worker(Butler.Bot, [[name: Butler.Bot]])
+      worker(GenEvent, [[name: @manager_name]]),
+      worker(Butler.Bot, [@manager_name, [name: Butler.Bot]])
     ]
 
     supervise(children, strategy: :one_for_one)
