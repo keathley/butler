@@ -1,13 +1,13 @@
 defmodule Butler.Bot do
   @behaviour :websocket_client_handler
 
-  def start_link(event_manager, opts \\ []) do
+  def start_link(event_manager, plugins, opts \\ []) do
     {:ok, json} = Butler.Rtm.start
     url = String.to_char_list(json.url)
-    :websocket_client.start_link(url, __MODULE__, {json, event_manager})
+    :websocket_client.start_link(url, __MODULE__, {json, event_manager, plugins})
   end
 
-  def init({json, events}, socket) do
+  def init({json, events, plugins}, socket) do
     slack = %{
       socket: socket,
       me: json.self,
@@ -17,10 +17,15 @@ defmodule Butler.Bot do
       users: json.users
     }
 
-    GenEvent.add_handler(events, Butler.Plugins.Cowsay, [])
-    GenEvent.add_handler(events, Butler.Plugins.TestCount, [])
+    Enum.each(plugins, fn({handler, state}) ->
+      GenEvent.add_handler(events, handler, state)
+    end)
 
     {:ok, %{slack: slack, events: events}}
+  end
+
+  def add_event_handler({handler, state}) do
+    GenEvent.add_handler()
   end
 
   def websocket_info(:start, _connection, state) do
