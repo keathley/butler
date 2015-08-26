@@ -8,6 +8,7 @@ defmodule Butler.Plugin do
 
       @before_compile Butler.Plugin
 
+
       def handle_event({:message, text, channel, slack}, state) do
         if bot_mentioned?(text) do
           parse_message(text) |> respond(state) |> handle_response(channel, slack)
@@ -18,9 +19,23 @@ defmodule Butler.Plugin do
 
       defp handle_response({:noreply, state}, _channel, _slack), do: {:ok, state}
 
-      defp handle_response({:reply, message, state}, channel, slack) do
-        send_message(message, channel, slack.socket)
+      defp handle_response({:reply, response, state}, channel, slack) do
+        {:ok, msg} = response_message(response)
+        send_message(msg, channel, slack.socket)
         {:ok, state}
+      end
+
+      def response_message(msg) when is_binary(msg) do
+        response_message({:text, msg})
+      end
+      def response_message({:code, msg}),  do: {:ok, "```#{msg}```"}
+      def response_message({:text, msg}),  do: {:ok, "#{msg}"}
+      def response_message({:quote, msg}), do: {:ok, ">#{msg}"}
+      def response_message(response) do
+        require Logger
+        
+        Logger.error "Unknown response type"
+        {:error, response}
       end
 
       def bot_mentioned?(text) do

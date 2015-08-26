@@ -24,10 +24,6 @@ defmodule Butler.Bot do
     {:ok, %{slack: slack, events: events}}
   end
 
-  def add_event_handler({handler, state}) do
-    GenEvent.add_handler()
-  end
-
   def websocket_info(:start, _connection, state) do
     IO.puts "Starting"
     {:ok, state}
