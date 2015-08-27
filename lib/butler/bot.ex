@@ -49,14 +49,6 @@ defmodule Butler.Bot do
     IO.puts "incoming text #{text}"
     GenEvent.notify(state.events, {:message, text, message.channel, state.slack})
     {:ok, state}
-    # case Butler.Plugin.hear(text) do
-    #   {:reply, response} ->
-    #     IO.puts "Handled #{text} with #{response}"
-    #     {:reply, {:text, encode(response, message.channel)}, state}
-    #   {:noreply} ->
-    #     IO.puts "Ignoring #{text} with :ok}"
-    #     {:ok, state}
-    # end
   end
 
   defp handle_message(_message, state), do: {:ok, state}
