@@ -1,13 +1,15 @@
-defmodule Butler.Bot do
-  use GenServer
+defmodule Butler.Adapters.Slack do
+  @behaviour Butler.Adapter
 
-  def start_link(event_manager, plugins, opts \\ []) do
-    {:ok, json} = Butler.Rtm.start
+  @behaviour :websocket_client_handler
+
+  def start_link(opts \\ []) do
+    {:ok, json} = Butler.Adapters.Slack.Rtm.start
     url = String.to_char_list(json.url)
-    :websocket_client.start_link(url, __MODULE__, {json, event_manager, plugins})
+    :websocket_client.start_link(url, __MODULE__, opts)
   end
 
-  def init({json, events, plugins}, socket) do
+  def init(json, socket) do
     slack = %{
       socket: socket,
       me: json.self,
@@ -17,26 +19,21 @@ defmodule Butler.Bot do
       users: json.users
     }
 
-    Enum.each(plugins, fn({handler, state}) ->
-      GenEvent.add_handler(events, handler, state)
-    end)
-
-    {:ok, %{slack: slack, events: events}}
+    {:ok, %{slack: slack}}
   end
 
   def websocket_info(:start, _connection, state) do
-    IO.puts "Starting"
+    Butler.Logger.debug "Starting"
     {:ok, state}
   end
 
   def websocket_terminate(reason, _connection, state) do
-    IO.puts "Terminated"
-    IO.inspect reason
+    Butler.Logger.error "Terminated", reason
     {:error, state}
   end
 
   def websocket_handle({:ping, msg}, _connection, state) do
-    IO.puts "Ping"
+    Butler.Logger.debug "Ping"
     {:reply, {:pong, msg}, state}
   end
 
@@ -46,8 +43,7 @@ defmodule Butler.Bot do
   end
 
   defp handle_message(message = %{type: "message", text: text}, state) do
-    IO.puts "incoming text #{text}"
-    GenEvent.notify(state.events, {:message, text, message.channel, state.slack})
+    Butler.Logger.debug "Recieved text: #{text}"
     {:ok, state}
   end
 
@@ -57,12 +53,8 @@ defmodule Butler.Bot do
     Poison.encode!(%{ type: "message", text: text, channel: channel })
   end
 
-  def send_message(text, channel, socket) do
+  def send(text, channel, socket) do
     msg = Poison.encode!(%{ type: "message", text: text, channel: channel })
     :websocket_client.send({:text, msg}, socket)
-  end
-
-  def receive_message() do
-    GenEvent.notify(state.events, {:message, text, message.channel, state.slack})
   end
 end
