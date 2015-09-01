@@ -8,8 +8,7 @@ defmodule Butler.Plugin do
 
       @before_compile Butler.Plugin
 
-
-      def handle_event({:message, text, channel, slack}, state) do
+      def handle_event({:message, text}, state) do
         if bot_mentioned?(text) do
           parse_message(text) |> respond(state) |> handle_response(channel, slack)
         else
@@ -33,7 +32,7 @@ defmodule Butler.Plugin do
       def response_message({:quote, msg}), do: {:ok, ">#{msg}"}
       def response_message(response) do
         require Logger
-        
+
         Logger.error "Unknown response type"
         {:error, response}
       end
