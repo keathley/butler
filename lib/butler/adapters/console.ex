@@ -21,7 +21,7 @@ defmodule Butler.Adapters.Console do
     format_reply({:text, msg})
   end
 
-  def format_reply({:code, msg}),  do: {:ok, "```#{msg}```"}
+  def format_reply({:code, msg}),  do: {:ok, "```\n#{msg}```"}
   def format_reply({:text, msg}),  do: {:ok, "#{msg}"}
   def format_reply({:quote, msg}), do: {:ok, ">#{msg}"}
   def format_reply(response), do: {:error, response}
@@ -36,7 +36,7 @@ defmodule Butler.Adapters.Console do
 
   defp print({:error, reponse}), do: Logger.error "Unknown response"
   defp print({:ok, output}) do
-    IO.puts output
+    IO.puts "\n#{output}"
   end
 
   def prompt do
