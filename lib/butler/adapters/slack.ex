@@ -53,6 +53,11 @@ defmodule Butler.Adapters.Slack do
     Poison.encode!(%{ type: "message", text: text, channel: channel })
   end
 
+  def send_message(text, channel, socket, client \\ :websocket_client) do
+    msg = Poison.encode!(%{ type: "message", text: text, channel: channel })
+    client.send({:text, msg}, socket)
+  end
+
   def send(text, channel, socket) do
     msg = Poison.encode!(%{ type: "message", text: text, channel: channel })
     :websocket_client.send({:text, msg}, socket)
