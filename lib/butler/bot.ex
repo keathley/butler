@@ -1,11 +1,21 @@
 defmodule Butler.Bot do
+  require Logger
+
   @behaviour :websocket_client_handler
 
-  def start_link(event_manager, plugins, opts \\ []) do
+  def start_link(event_manager, plugins, _opts \\ []) do
     {:ok, json} = Butler.Rtm.start
     url = String.to_char_list(json.url)
-    :websocket_client.start_link(url, __MODULE__, {json, event_manager, plugins})
+    {:ok, pid} = :websocket_client.start_link(url, __MODULE__, {json, event_manager, plugins})
+    Process.register(pid, :adapter)
+    {:ok, pid}
   end
+
+  def send_message(response, original) do
+    send(:adapter, {:respond, response, original})
+  end
+
+  # Server callbacks
 
   def init({json, events, plugins}, socket) do
     slack = %{
@@ -24,41 +34,46 @@ defmodule Butler.Bot do
     {:ok, %{slack: slack, events: events}}
   end
 
-  def websocket_info(:start, _connection, state) do
-    IO.puts "Starting"
+  def websocket_info({:respond, text, original}, _connection, state) do
+    case format_response(text) do
+      {:ok, text} ->
+        response = %{text: text, channel: original.channel, type: "message"}
+        json = Poison.encode!(response)
+        {:reply, {:text, json}, state}
+      {:error, _} ->
+        Logger.error "Unknown response type"
+        {:noreply, state}
+    end
+  end
+
+  def websocket_handle({:ping, msg}, _connection, state) do
+    {:reply, {:pong, msg}, state}
+  end
+
+  def websocket_handle({:text, json}, _connection, state) do
+    message = Poison.decode!(json, as: Butler.Message)
+
+    case message do
+      %{type: "message"} ->
+        GenEvent.notify(state.events, {:message, message})
+      _                  ->
+        Logger.warn "unhandled message type: #{message.type}"
+    end
+
     {:ok, state}
   end
 
   def websocket_terminate(reason, _connection, state) do
-    IO.puts "Terminated"
-    IO.inspect reason
+    Logger.error "Terminating because: #{reason}"
     {:error, state}
   end
 
-  def websocket_handle({:ping, msg}, _connection, state) do
-    IO.puts "Ping"
-    {:reply, {:pong, msg}, state}
+  def format_response(msg) when is_binary(msg) do
+    format_response({:text, msg})
   end
-
-  def websocket_handle({:text, msg}, _connection, state) do
-    message = Poison.Parser.parse!(msg, keys: :atoms)
-    handle_message(message, state)
-  end
-
-  defp handle_message(message = %{type: "message", text: text}, state) do
-    IO.puts "incoming text #{text}"
-    GenEvent.notify(state.events, {:message, text, message.channel, state.slack})
-    {:ok, state}
-  end
-
-  defp handle_message(_message, state), do: {:ok, state}
-
-  defp encode(text, channel) do
-    Poison.encode!(%{ type: "message", text: text, channel: channel })
-  end
-
-  def send_message(text, channel, socket) do
-    msg = Poison.encode!(%{ type: "message", text: text, channel: channel })
-    :websocket_client.send({:text, msg}, socket)
-  end
+  def format_response({:code, msg}),  do: {:ok, "```#{msg}```"}
+  def format_response({:text, msg}),  do: {:ok, "#{msg}"}
+  def format_response({:quote, msg}), do: {:ok, ">#{msg}"}
+  def format_response(response), do: {:error, response}
 end
+
