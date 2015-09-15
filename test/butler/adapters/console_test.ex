@@ -9,6 +9,10 @@ defmodule Butler.Adapters.ConsoleTest do
     assert false
   end
 
-  test "format_message/1" do
-  end
+  test "send_message/2 sends messages to terminal"
+
+  test "format_response/1 handles strings"
+  test "format_response/1 handles text"
+  test "format_response/1 handles code"
+  test "format_response/1 handles quote"
 end

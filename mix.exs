@@ -19,7 +19,7 @@ defmodule Butler.Mixfile do
   def application do
     [
       applications: [ :logger, :httpoison ],
-      mod: {Butler, plugins}
+      mod: {Butler, [plugins, adapter]}
     ]
   end
 
@@ -28,6 +28,11 @@ defmodule Butler.Mixfile do
       {Butler.Plugins.Cowsay, []},
       {Butler.Plugins.TestCount, []}
     ]
+  end
+
+  def adapter do
+    # Application.get_env(:bot, :adapter)
+    Butler.Adapters.Console
   end
 
   # Dependencies can be Hex packages:
