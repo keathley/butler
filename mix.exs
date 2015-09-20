@@ -19,7 +19,7 @@ defmodule Butler.Mixfile do
   def application do
     [
       applications: [ :logger, :httpoison ],
-      mod: {Butler, plugins}
+      mod: {Butler, [plugins]}
     ]
   end
 

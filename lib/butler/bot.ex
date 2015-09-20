@@ -1,79 +1,38 @@
 defmodule Butler.Bot do
-  require Logger
+  use GenServer
 
-  @behaviour :websocket_client_handler
+  @adapter Application.get_env(:bot, :adapter)
 
-  def start_link(event_manager, plugins, _opts \\ []) do
-    {:ok, json} = Butler.Rtm.start
-    url = String.to_char_list(json.url)
-    {:ok, pid} = :websocket_client.start_link(url, __MODULE__, {json, event_manager, plugins})
-    Process.register(pid, :adapter)
-    {:ok, pid}
+  def start_link(event_manager, plugins) do
+    GenServer.start_link(__MODULE__, {event_manager, plugins}, [name: __MODULE__])
   end
 
-  def send_message(response, original) do
-    send(:adapter, {:respond, response, original})
+  def notify(message) do
+    GenServer.cast(__MODULE__, {:notify, message})
   end
 
-  # Server callbacks
+  def respond({response, original}) do
+    GenServer.cast(__MODULE__, {:respond, response, original})
+  end
 
-  def init({json, events, plugins}, socket) do
-    slack = %{
-      socket: socket,
-      me: json.self,
-      team: json.team,
-      channels: json.channels,
-      groups: json.groups,
-      users: json.users
-    }
-
+  def init({manager, plugins}) do
     Enum.each(plugins, fn({handler, state}) ->
-      GenEvent.add_handler(events, handler, state)
+      GenEvent.add_mon_handler(manager, handler, state)
     end)
 
-    {:ok, %{slack: slack, events: events}}
+    {:ok, {manager}}
   end
 
-  def websocket_info({:respond, text, original}, _connection, state) do
-    case format_response(text) do
-      {:ok, text} ->
-        response = %{text: text, channel: original.channel, type: "message"}
-        json = Poison.encode!(response)
-        {:reply, {:text, json}, state}
-      {:error, _} ->
-        Logger.error "Unknown response type"
-        {:noreply, state}
-    end
+  def handle_cast({:respond, response, original}, state) do
+    @adapter.send_message(response, original)
+
+    {:noreply, state}
   end
 
-  def websocket_handle({:ping, msg}, _connection, state) do
-    {:reply, {:pong, msg}, state}
+  def handle_cast({:notify, message}, {manager}=state) do
+    GenEvent.notify(manager, {:message, message})
+
+    {:noreply, state}
   end
-
-  def websocket_handle({:text, json}, _connection, state) do
-    message = Poison.decode!(json, as: Butler.Message)
-
-    case message do
-      %{type: "message"} ->
-        GenEvent.notify(state.events, {:message, message})
-      _                  ->
-        Logger.warn "unhandled message type: #{message.type}"
-    end
-
-    {:ok, state}
-  end
-
-  def websocket_terminate(reason, _connection, state) do
-    Logger.error "Terminating because: #{reason}"
-    {:error, state}
-  end
-
-  def format_response(msg) when is_binary(msg) do
-    format_response({:text, msg})
-  end
-  def format_response({:code, msg}),  do: {:ok, "```#{msg}```"}
-  def format_response({:text, msg}),  do: {:ok, "#{msg}"}
-  def format_response({:quote, msg}), do: {:ok, ">#{msg}"}
-  def format_response(response), do: {:error, response}
 end
 

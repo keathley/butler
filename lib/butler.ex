@@ -1,7 +1,7 @@
 defmodule Butler do
   use Application
 
-  def start(_type, plugins) do
+  def start(_type, [plugins]) do
     Butler.Supervisor.start_link(plugins)
   end
 
