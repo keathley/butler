@@ -6,13 +6,14 @@ defmodule Butler.Adapters.Console do
       GenEvent.add_handler(event_manager, handler, state)
     end)
 
-    Process.register(self, :adapter)
+    {:ok, pid} = Task.start_link(fn -> loop(event_manager) end)
 
-    loop(event_manager)
+    Process.register(pid, :adapter)
+
+    {:ok, pid}
   end
 
   def send_message(response, _original) do
-    IO.puts "Hello world"
     case format_response(response) do
       {:ok, text} ->
         IO.puts text

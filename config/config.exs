@@ -24,4 +24,7 @@ use Mix.Config
 #     import_config "#{Mix.env}.exs"
 
 config :slack, api_key: System.get_env("BUTLER_SLACK_API_KEY")
-config :bot, name: System.get_env("BUTLER_NAME") || "Butler"
+config :bot,
+  name: System.get_env("BUTLER_NAME") || "Butler",
+  adapter: Butler.Adapters.Slack
+

@@ -9,9 +9,9 @@ defmodule Butler.Plugin do
       @bot_name Application.get_env(:bot, :name)
       @before_compile Butler.Plugin
 
-      def handle_event({:message, %{text: text} = message}, state) do
+      def handle_event({:message, %{text: text} = original}, state) do
         response = send_response_to_plugin(text, state)
-        {:ok, state} = handle_response(response, message)
+        {:ok, state} = handle_response(response, original)
       end
 
       defp send_response_to_plugin(text, state) do
@@ -21,26 +21,28 @@ defmodule Butler.Plugin do
         end
       end
 
-      defp handle_response({:noreply, state}, message), do: {:ok, state}
-      defp handle_response({:reply, response, state}, message) do
-        Butler.Bot.send_message(response, message)
-        {:ok, state}
-      end
-
-      def bot_mentioned?(text) do
+      defp bot_mentioned?(text) do
         name = @bot_name |> String.downcase
         [first | _] = String.split(text)
         first |> String.downcase |> String.contains?(name)
       end
 
-      def strip_name(text) do
+      defp strip_name(text) do
         [_ | msg] = String.split(text)
         Enum.join(msg, " ")
       end
+
+      defp handle_response({:reply, response, state}, original) do
+        Butler.Bot.respond({response, original})
+
+        {:ok, state}
+      end
+
+      defp handle_response({:noreply, state}, original), do: {:ok, state}
     end
   end
 
-  defmacro __before_compile__(env) do
+  defmacro __before_compile__(_env) do
     quote do
       def hear(_msg, state), do: {:noreply, state}
       def respond(_msg, state), do: {:noreply, state}

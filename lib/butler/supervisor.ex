@@ -1,16 +1,18 @@
 defmodule Butler.Supervisor do
   use Supervisor
 
-  def start_link(plugins, adapter) do
-    Supervisor.start_link(__MODULE__, {:ok, plugins, adapter})
+  def start_link(plugins) do
+    Supervisor.start_link(__MODULE__, {:ok, plugins})
   end
 
-  @manager_name Butler.EventManager
+  @manager Butler.EventManager
+  @adapter Application.get_env(:bot, :adapter)
 
-  def init({:ok, plugins, adapter}) do
+  def init({:ok, plugins}) do
     children = [
-      worker(GenEvent, [[name: @manager_name]]),
-      worker(adapter, [@manager_name, plugins, [name: adapter]])
+      worker(GenEvent, [[name: @manager]]),
+      worker(@adapter, []),
+      worker(Butler.Bot, [@manager, plugins])
     ]
 
     supervise(children, strategy: :one_for_one)
