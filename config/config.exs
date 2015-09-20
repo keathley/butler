@@ -26,5 +26,6 @@ use Mix.Config
 config :slack, api_key: System.get_env("BUTLER_SLACK_API_KEY")
 config :bot,
   name: System.get_env("BUTLER_NAME") || "Butler",
-  adapter: Butler.Adapters.Slack
+  # adapter: Butler.Adapters.Slack
+  adapter: Butler.Adapters.Console
 

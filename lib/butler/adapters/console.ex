@@ -1,16 +1,15 @@
 defmodule Butler.Adapters.Console do
   require Logger
 
-  def start_link(event_manager, plugins, _opts \\ []) do
-    Enum.each(plugins, fn {handler, state} ->
-      GenEvent.add_handler(event_manager, handler, state)
-    end)
+  def start_link(_opts \\ []) do
+    import Supervisor.Spec
 
-    {:ok, pid} = Task.start_link(fn -> loop(event_manager) end)
+    children = [
+      worker(Task, [__MODULE__, :accept, []])
+    ]
 
-    Process.register(pid, :adapter)
-
-    {:ok, pid}
+    opts = [strategy: :one_for_one, name: __MODULE__]
+    Supervisor.start_link(children, opts)
   end
 
   def send_message(response, _original) do
@@ -22,23 +21,27 @@ defmodule Butler.Adapters.Console do
     end
   end
 
+  def accept do
+    text = IO.gets prompt
+
+    text
+    |> String.rstrip
+    |> new_message
+    |> Butler.Bot.notify
+
+    accept
+  end
+
   def format_response(msg) when is_binary(msg) do
     format_response({:text, msg})
   end
-  def format_response({:code, msg}),  do: {:ok, "```#{msg}```"}
+  def format_response({:code, msg}),  do: {:ok, "\n#{msg}"}
   def format_response({:text, msg}),  do: {:ok, "#{msg}"}
   def format_response({:quote, msg}), do: {:ok, ">#{msg}"}
   def format_response(response), do: {:error, response}
 
-  # Server Callbacks
-
-  defp loop(events) do
-    text = IO.gets prompt
-    message = %Butler.Message{ text: text, channel: "terminal", user: "1337" }
-
-    GenEvent.notify(events, {:message, message})
-
-    loop(events)
+  defp new_message(text) do
+    %Butler.Message{ text: text, channel: "terminal", user: "1337" }
   end
 
   defp prompt do
