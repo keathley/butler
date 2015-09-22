@@ -3,20 +3,44 @@ defmodule Butler.Plugin do
   Defines a Plugin.
   """
 
+  use Behaviour
+
+  @doc """
+  Called for any messages that come through the bot.
+  """
+  defcallback hear(msg :: String.t, state :: any) ::
+              {:noreply, state :: any} |
+              {:reply, {:text, String.t}, state :: any} |
+              {:reply, {:code, String.t}, state :: any} |
+              {:reply, {:quote, String.t}, state :: any}|
+              {:reply, String.t, state :: any}
+
+  @doc """
+  Called for any messages that starts with the bot's name.
+  """
+  defcallback respond(msg :: String.t, state :: any) ::
+              {:noreply, state :: any} |
+              {:reply, {:text, String.t}, state :: any} |
+              {:reply, {:code, String.t}, state :: any} |
+              {:reply, {:quote, String.t}, state :: any}|
+              {:reply, String.t, state :: any}
+
   @doc false
   defmacro __using__(_opts) do
     quote do
+      @behaviour unquote(__MODULE__)
+      @before_compile unquote(__MODULE__)
+      @bot_name Application.get_env(:bot, :name)
+
       use GenEvent
 
       require Logger
-
-      @bot_name Application.get_env(:bot, :name)
-      @before_compile Butler.Plugin
 
       def handle_event({:message, %{text: text} = original}, state) do
         response = send_response_to_plugin(text, state)
         {:ok, state} = handle_response(response, original)
       end
+
 
       defp send_response_to_plugin(text, state) do
         case bot_mentioned?(text) do
@@ -38,7 +62,6 @@ defmodule Butler.Plugin do
 
       defp handle_response({:reply, response, state}, original) do
         Butler.Bot.respond({response, original})
-
         {:ok, state}
       end
 
@@ -50,7 +73,7 @@ defmodule Butler.Plugin do
     quote do
       def hear(_msg, state), do: {:noreply, state}
       def respond(_msg, state), do: {:noreply, state}
-      defoverridable [hear: 2, respond: 2]
     end
   end
 end
+
