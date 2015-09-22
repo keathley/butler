@@ -1,4 +1,8 @@
 defmodule Butler.Plugin do
+  @moduledoc """
+  Defines a Plugin.
+  """
+
   @doc false
   defmacro __using__(_opts) do
     quote do
