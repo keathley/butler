@@ -13,7 +13,7 @@ Once you've done that you should be able to install your dependencies and fire u
 
 
     $ mix deps.get
-    $ iex -S mix
+    $ mix run --no-halt
 
 Butler should now be up and running.
 
