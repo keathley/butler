@@ -1,7 +1,7 @@
 defmodule Butler.Bot do
   use GenServer
 
-  @adapter Application.get_env(:bot, :adapter)
+  @adapter Application.get_env(:butler, :adapter)
 
   def start_link(event_manager, plugins) do
     GenServer.start_link(__MODULE__, {event_manager, plugins}, [name: __MODULE__])

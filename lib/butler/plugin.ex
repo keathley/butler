@@ -30,7 +30,7 @@ defmodule Butler.Plugin do
     quote do
       @behaviour unquote(__MODULE__)
       @before_compile unquote(__MODULE__)
-      @bot_name Application.get_env(:bot, :name)
+      @bot_name Application.get_env(:butler, :name)
 
       use GenEvent
 
