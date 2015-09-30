@@ -6,7 +6,7 @@ defmodule Butler.Supervisor do
   end
 
   @manager Butler.EventManager
-  @adapter Application.get_env(:bot, :adapter)
+  @adapter Application.get_env(:butler, :adapter)
 
   def init({:ok, plugins}) do
     children = [

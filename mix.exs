@@ -5,7 +5,7 @@ defmodule Butler.Mixfile do
     [app: :butler,
      description: "A simple elixir robot to help you get things done",
      version: "0.2.0",
-     elixir: "~> 1.0",
+     elixir: "~> 1.1.0",
      escript: [main_module: Butler],
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
