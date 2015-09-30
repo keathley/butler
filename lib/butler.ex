@@ -47,8 +47,8 @@ defmodule Butler do
   @doc """
   Starts Butler.
   """
-  def start(_type, [plugins]) do
-    Butler.Supervisor.start_link(plugins)
+  def start(_type, _opts \\ []) do
+    Butler.Supervisor.start_link()
   end
 
   @doc """
