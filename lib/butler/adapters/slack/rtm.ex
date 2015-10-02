@@ -1,5 +1,5 @@
 defmodule Butler.Adapters.Slack.Rtm do
-  @slack_token Application.get_env(:slack, :api_key)
+  @slack_token Application.get_env(:butler, :slack_api_key)
   @user_agent [ {"User-agent", "Butler the robot"} ]
   @url "https://slack.com/api/rtm.start?token=#{@slack_token}"
 

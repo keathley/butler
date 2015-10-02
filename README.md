@@ -38,10 +38,11 @@ repl interface.
 
 Butler needs a slack api token in order to connect to your organization.
 
-    $ export SLACK_API_KEY=your_api_key
+    $ export BUTLER_SLACK_API_KEY=your_api_key
 
 You can then run butler in production mode.
 
+    $ MIX_ENV=prod mix compile
     $ MIX_ENV=prod mix run --no-halt
 
 ## Contributing
