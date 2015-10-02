@@ -15,6 +15,13 @@ defmodule Mix.Tasks.Butler.New do
     config/prod.exs
   )
 
+  root = Path.expand("../templates", __DIR__)
+
+  for file <- @new_files do
+    @external_resource Path.join(root, file)
+    def contents(unquote(file)), do: unquote(File.read!(Path.join(root, "new/#{file}")))
+  end
+
   @moduledoc """
   Creates a new Butler application.
 
@@ -53,7 +60,7 @@ defmodule Mix.Tasks.Butler.New do
   end
 
   defp rendered_template(file, bindings) do
-    EEx.eval_file "templates/new/#{file}", bindings
+    EEx.eval_string contents(file), bindings, file: file
   end
 
   defp print_info(path) do
