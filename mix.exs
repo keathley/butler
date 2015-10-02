@@ -4,7 +4,7 @@ defmodule Butler.Mixfile do
   def project do
     [app: :butler,
      description: "A simple elixir robot to help you get things done",
-     version: "0.4.0",
+     version: "0.4.1",
      elixir: "~> 1.1.0",
      escript: [main_module: Butler],
      build_embedded: Mix.env == :prod,
