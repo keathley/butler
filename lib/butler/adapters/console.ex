@@ -1,6 +1,8 @@
 defmodule Butler.Adapters.Console do
   require Logger
 
+  @bot_name Application.get_env(:butler, :name)
+
   def start_link(_opts \\ []) do
     import Supervisor.Spec
 
@@ -45,7 +47,7 @@ defmodule Butler.Adapters.Console do
   end
 
   defp prompt do
-    "butler>"
+    "#{@bot_name}>"
   end
 end
 
