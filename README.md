@@ -19,6 +19,8 @@ to name your robot `marvin` then you would run:
 
 Congratulations! You now have your own butler.
 
+Butler comes with a default configuration, which can be updated in `config/config.exs` or `config/ENV.exs` per environment.
+
 ### Plugins
 
 Plugins give Butler abilities. They provide a simple api for listening for
