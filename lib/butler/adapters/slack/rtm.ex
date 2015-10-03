@@ -8,7 +8,7 @@ defmodule Butler.Adapters.Slack.Rtm do
   end
 
   defp handle_response({:ok, %HTTPoison.Response{body: body}}) do
-    json = Poison.Parser.parse!(body, keys: :atoms)
+    json = Poison.Parser.parse!(body)
     {:ok, json}
   end
 

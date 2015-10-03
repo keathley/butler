@@ -5,7 +5,7 @@ defmodule Butler.Adapters.Slack do
 
   def start_link(_opts \\ []) do
     {:ok, json} = Butler.Adapters.Slack.Rtm.start
-    url = String.to_char_list(json.url)
+    url = String.to_char_list(json["url"])
     {:ok, pid} = :websocket_client.start_link(url, __MODULE__, json)
     Process.register(pid, __MODULE__)
     {:ok, pid}
@@ -20,11 +20,11 @@ defmodule Butler.Adapters.Slack do
   def init(json, socket) do
     slack = %{
       socket: socket,
-      me: json.self,
-      team: json.team,
-      channels: json.channels,
-      groups: json.groups,
-      users: json.users
+      me: json["self"],
+      team: json["team"],
+      channels: json["channels"],
+      groups: json["groups"],
+      users: json["users"]
     }
 
     {:ok, %{slack: slack}}

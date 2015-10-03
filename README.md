@@ -45,6 +45,55 @@ You can then run butler in production mode.
     $ MIX_ENV=prod mix compile
     $ MIX_ENV=prod mix run --no-halt
 
+### Deploying to Heroku
+
+Heroku is the easiest way to deploy your bot:
+
+First you'll need to create a new application with the elixir buildpack:
+
+    $ heroku create --buildpack "https://github.com/HashNuke/heroku-buildpack-elixir.git"
+
+Or if you've already created your application you can set the buildpack directly:
+
+    $ heroku config:set BUILDPACK_URL="https://github.com/HashNuke/heroku-buildpack-elixir.git"
+
+Before you deploy you need to set any environment variables that you'll need.
+For the slack adapter that will be this:
+
+    $ heroku config:set BUTLER_SLACK_API_KEY=your-api-key
+
+You'll also have to make sure that any variables you need at compile time are
+included in the elixir_buildpack.config file:
+
+    $ cat elixir_buildpack.config
+    erlang_version=17.5
+    elixir_version=1.1.1
+    always_rebuild=true
+    config_vars_to_export=(BUTLER_SLACK_API_KEY BUTLER_SLACK_API_KEY)
+
+If these config vars aren't included in the `config_vars_to_export` then they
+won't be availble during compile time which will cause issues during runtime.
+
+For more information on configuration you can check out the [elixir_buildpack](https://github.com/HashNuke/heroku-buildpack-elixir).
+
+Once the configuration variables have been set its time to push:
+
+    $ git push heroku master
+
+You should see a lot of logging and after your bot should be up and running.
+
+If you have any issues you can review the heroku logs:
+
+    $ heroku logs
+
+Your bot should now be deployed!
+
+### Deploying to Unix
+
+There are a number of ways to deploy to unix. The recommended way is to create
+a release of Butler with [exrm](https://github.com/bitwalker/exrm) and run the
+release on your vps or server of choice.
+
 ## Contributing
 
 Butler is still a work in progress and we appreciate any contributions. If you

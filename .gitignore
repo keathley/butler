@@ -5,3 +5,4 @@ erl_crash.dump
 .env
 /generator/_build
 .DS_Store
+/rel

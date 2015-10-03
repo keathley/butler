@@ -9,6 +9,8 @@ defmodule Mix.Tasks.Butler.New do
     README.md
     mix.exs
     .gitignore
+    Procfile
+    elixir_buildpack.config
     plugins/example.ex
     config/config.exs
     config/dev.exs
