@@ -32,6 +32,9 @@ defmodule <%= mod_name %>.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [{:butler, "~> <%= version %>"}]
+    [
+      {:websocket_client, git: "http://github.com/jeremyong/websocket_client"},
+      {:butler, "~> <%= version %>"}
+    ]
   end
 end

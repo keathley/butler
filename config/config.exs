@@ -24,7 +24,10 @@ use Mix.Config
 config :butler,
   name: System.get_env("BUTLER_NAME") || "Butler",
   adapter: Butler.Adapters.Console,
-  plugins: []
+  plugins: [
+    {Butler.Plugins.Cowsay, []},
+    {Butler.Plugins.TestCount, []}
+  ]
 
 import_config "#{Mix.env}.exs"
 

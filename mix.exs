@@ -19,14 +19,7 @@ defmodule Butler.Mixfile do
   def application do
     [
       applications: [ :logger, :httpoison ],
-      mod: {Butler, [plugins]}
-    ]
-  end
-
-  def plugins do
-    [
-      {Butler.Plugins.Cowsay, []},
-      {Butler.Plugins.TestCount, []}
+      mod: {Butler, []}
     ]
   end
 
@@ -41,8 +34,8 @@ defmodule Butler.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:poison, "~> 1.4.0"},
-      {:httpoison, "~> 0.7"},
+      {:poison, "~> 1.5.0"},
+      {:httpoison, "~> 0.7.4"},
       {:websocket_client, git: "http://github.com/jeremyong/websocket_client"}
     ]
   end
