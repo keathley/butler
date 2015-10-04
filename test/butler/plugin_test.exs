@@ -1,3 +1,22 @@
+defmodule Butler.PluginTest do
+  use ExSpec, async: true
+
+  defmodule TestPlugin do
+    respond(~r/test (.*)/, [_all, text]) do
+      {:reply, "You sent me #{text}"}
+    end
+  end
+
+
+  context "the user has defined a respond" do
+    describe "when the plugin receives matching text" do
+      it "returns a reply message" do
+        response = TestPlugin.notify({:message, %{text: "test snausages"}})
+        assert response == {:reply, "You sent me snausages"}
+      end
+    end
+  end
+end
 # defmodule Butler.PluginTest do
 #   use ExUnit.Case, async: true
 

@@ -4,6 +4,7 @@
   "conform": {:hex, :conform, "0.16.0"},
   "cowsay": {:hex, :cowsay, "0.0.1"},
   "erlware_commons": {:hex, :erlware_commons, "0.15.0"},
+  "ex_spec": {:hex, :ex_spec, "0.3.0"},
   "exrm": {:hex, :exrm, "0.19.6"},
   "getopt": {:hex, :getopt, "0.8.2"},
   "hackney": {:hex, :hackney, "1.3.2"},
