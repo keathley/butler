@@ -30,10 +30,20 @@ defmodule Butler.Bot do
     {:noreply, state}
   end
 
-  def handle_cast({:notify, message}, {manager}=state) do
-    GenEvent.notify(manager, {:message, message})
+  def handle_cast({:notify, message}, state) do
+    Task.async(fn -> notify_plugins(message) end) |> Task.await
 
     {:noreply, state}
   end
+
+  defp notify_plugins(%Butler.Message{text: text}=original) do
+    @plugins
+    |> Enum.map(fn({plugin, _}) -> plugin.notify(text) end)
+    |> Enum.find(fn(response) -> reply?(response) end)
+    |> @adapter.send_message(original)
+  end
+
+  defp reply?({:reply, _}), do: true
+  defp reply?(_), do: false
 end
 

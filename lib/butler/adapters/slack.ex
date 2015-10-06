@@ -11,7 +11,7 @@ defmodule Butler.Adapters.Slack do
     {:ok, pid}
   end
 
-  def send_message(response, original) do
+  def send_message({:reply, response}, original) do
     send(__MODULE__, {:respond, response, original})
   end
 

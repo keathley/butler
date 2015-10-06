@@ -14,7 +14,7 @@ defmodule Butler.Adapters.Console do
     Supervisor.start_link(children, opts)
   end
 
-  def send_message(response, _original) do
+  def send_message({:reply, response}, _original) do
     case format_response(response) do
       {:ok, text} ->
         IO.puts text
