@@ -3,7 +3,6 @@ defmodule Butler.Plugin do
   Defines a Plugin.
   """
 
-
   # use Behaviour
 
 
@@ -38,63 +37,57 @@ defmodule Butler.Plugin do
       @before_compile unquote(__MODULE__)
       @bot_name Application.get_env(:butler, :name)
 
-
       require Logger
 
-      # def handle_event({:message, %{text: text} = original}, state) do
-      #   response = send_response_to_plugin(text, state)
-      #   {:ok, state} = handle_response(response, original)
-      # end
-
-      # defp send_response_to_plugin(text, state) do
-      #   case bot_mentioned?(text) do
-      #     true -> strip_name(text) |> respond(state)
-      #     _    -> hear(text, state)
-      #   end
-      # end
-
-      # defp bot_mentioned?(text) do
-      #   name = @bot_name |> String.downcase
-      #   [first | _] = String.split(text)
-      #   first |> String.downcase |> String.contains?(name)
-      # end
-
-      # defp strip_name(text) do
-      #   [_ | msg] = String.split(text)
-      #   Enum.join(msg, " ")
-      # end
-
-      # defp handle_response({:reply, response, state}, original) do
-      #   Butler.Bot.respond({response, original})
-      #   {:ok, state}
-      # end
-
-      # defp handle_response({:noreply, state}, original), do: {:ok, state}
+      def call_plugin({fn_name, regex}, text) do
+        apply(__MODULE__, fn_name, [Regex.run(regex, text)])
+      end
     end
   end
 
   defmacro __before_compile__(_env) do
     quote do
-      def notify!(text) when is_binary(text) do
-        notify!({:message, %{text: text}})
+      def notify(text) when is_binary(text) do
+        notify({:message, %{text: text}})
       end
-      def notify!({:message, %{text: text}}) do
-        Enum.each @handlers, fn {func, regex} ->
-          if capture = Regex.run(regex, text) do
-            apply(__MODULE__, func, [capture])
-          end
+
+      def notify({:message, %{text: text}}) do
+        handler = Enum.find @handlers, fn({_func, regex}) ->
+          Regex.match?(regex, text)
+        end
+        case handler do
+          nil -> {:noreply}
+          _   -> call_plugin(handler, text)
         end
       end
     end
   end
 
-  defp name(pattern) do
-    [{:<<>>, _, [text]}, []] = pattern
-    handler = String.to_atom(text)
+  defp source([{:<<>>, _, [string]}, []]) do
+    string
   end
 
-  defmacro respond({:sigil_r, _, pattern}=regex, captures, do: block) do
+  defp name(pattern) do
+    pattern
+    |> source
+    |> String.to_atom
+  end
+
+  defp respond_regex(pattern) do
+    text = source(pattern)
+    ~r"#{bots_name_regex} #{text}"
+  end
+
+  defp bots_name_regex do
+    {first_char, rest} =
+      Application.get_env(:butler, :name)
+      |> String.split_at 1
+    "@?(?i)#{first_char}(?-i)#{rest}:?"
+  end
+
+  defmacro respond({:sigil_r, _, pattern}, captures, do: block) do
     fn_name = name(pattern)
+    regex = respond_regex(pattern) |> Macro.escape
 
     quote do
       @handlers {unquote(fn_name), unquote(regex)}
@@ -103,15 +96,17 @@ defmodule Butler.Plugin do
       end
     end
   end
-end
 
-defmodule TestPlugin do
-  use Butler.Plugin
+  defmacro respond({:sigil_r, _, pattern}, do: block) do
+    fn_name = name(pattern)
+    regex = respond_regex(pattern) |> Macro.escape
 
-  respond(~r/test (.*)/, [all, cap]) do
-    IO.puts "Got this issue: #{all}"
-    IO.puts "Got the message: #{cap}"
-    {:reply, cap}
+    quote do
+      @handlers {unquote(fn_name), unquote(regex)}
+      def unquote(fn_name)([_all]) do
+        unquote(block)
+      end
+    end
   end
 end
 

@@ -2,72 +2,34 @@ defmodule Butler.PluginTest do
   use ExSpec, async: true
 
   defmodule TestPlugin do
+    use Butler.Plugin
+
     respond(~r/test (.*)/, [_all, text]) do
       {:reply, "You sent me #{text}"}
     end
-  end
 
-
-  context "the user has defined a respond" do
-    describe "when the plugin receives matching text" do
-      it "returns a reply message" do
-        response = TestPlugin.notify({:message, %{text: "test snausages"}})
-        assert response == {:reply, "You sent me snausages"}
-      end
+    respond ~r/snausage me/ do
+      {:reply, "snausages"}
     end
   end
+
+  test "respond/2 when the message doesn't start with bots name" do
+    assert TestPlugin.notify("some message") == {:noreply}
+  end
+
+  test "respond/2 when the message starts with bots name" do
+    assert TestPlugin.notify("butler snausage me") == {:reply, "snausages"}
+  end
+
+  test "respond/2 returns capture groups" do
+    assert TestPlugin.notify("butler test this message") == {:reply, "You sent me this message"}
+  end
+
+  test "respond/2 responds when the name is capitalized" do
+    assert TestPlugin.notify("Butler snausage me") == {:reply, "snausages"}
+  end
+
+  test "respond/2 responds when the name is 'mentioned'" do
+    assert TestPlugin.notify("@Butler: snausage me") == {:reply, "snausages"}
+  end
 end
-# defmodule Butler.PluginTest do
-#   use ExUnit.Case, async: true
-
-#   defmodule Bot do
-#     use Butler.Plugin
-
-#     def respond("test", state) do
-#       {:reply, "replying to test", state}
-#     end
-
-#     def hear("hear", state) do
-#       {:reply, "heard you", state}
-#     end
-#   end
-
-#   defmodule FakeWebsocketClient do
-#     def send({:text, json}, socket) do
-#       {json, socket}
-#     end
-#   end
-
-#   test "responds to its name" do
-#     assert Bot.bot_mentioned?("butler you there?")
-#   end
-
-#   test "doesn't respond to other messages" do
-#     refute Bot.bot_mentioned?("you there?")
-#   end
-
-#   test "parse_message/1 removes bots name" do
-#     assert Bot.parse_message("butler you there?") == "you there?"
-#   end
-
-#   test "respond/2 defaults to no reply" do
-#     assert Bot.respond("blah", []) == {:noreply, []}
-#   end
-
-#   test "hear/2 defaults to noreply" do
-#     assert Bot.hear("meh", []) == {:noreply, []}
-#   end
-
-#   test "send_message/3 sends the json payload" do
-#     result = Bot.send_message(
-#       "Test Message",
-#       "chan",
-#       %{socket: nil},
-#       FakeWebsocketClient
-#     )
-#     assert result == {
-#       ~s({"type":"message","text":"Test Message","channel":"chan"}),
-#       %{socket: nil}
-#     }
-#   end
-# end
