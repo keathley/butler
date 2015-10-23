@@ -7,11 +7,11 @@ defmodule Butler.Bot do
     |> Enum.each(fn(plugin) -> notify_plugin(plugin, msg) end)
   end
 
-  def reply(conn, resp) do
+  def reply(resp) do
     @adapter.reply(resp)
   end
 
-  def say(conn, resp) do
+  def say(resp) do
     @adapter.say(resp)
   end
 

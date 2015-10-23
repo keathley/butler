@@ -7,14 +7,14 @@ defmodule Butler.Plugin.Responders do
 
   @spec reply(conn, String.t) :: nil
   def reply(conn, text) do
-    resp = response(conn, text)
-    Butler.Bot.reply(conn, resp)
+    response(conn, text)
+    |> Butler.Bot.reply
   end
 
   @spec say(conn, String.t) :: nil
   def say(conn, text) do
-    resp = response(conn, text)
-    Butler.Bot.say(conn, resp)
+    response(conn, text)
+    |> Butler.Bot.say
   end
 
   defp response(conn, text) do
