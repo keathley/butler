@@ -23,6 +23,14 @@ defmodule Butler.Adapters.Console do
     end
   end
 
+  def reply(resp) do
+    IO.puts mention_user(resp.user) <> format_response(resp.text)
+  end
+
+  def say(resp) do
+    IO.puts format_response(resp.text)
+  end
+
   def accept do
     text = IO.gets prompt
 
@@ -37,10 +45,14 @@ defmodule Butler.Adapters.Console do
   def format_response(msg) when is_binary(msg) do
     format_response({:text, msg})
   end
-  def format_response({:code, msg}),  do: {:ok, "\n#{msg}"}
-  def format_response({:text, msg}),  do: {:ok, "#{msg}"}
-  def format_response({:quote, msg}), do: {:ok, ">#{msg}"}
-  def format_response(response), do: {:error, response}
+  def format_response({:code, msg}),  do: "\n#{msg}"
+  def format_response({:text, msg}),  do: "#{msg}"
+  def format_response({:quote, msg}), do: ">#{msg}"
+  def format_response(_), do: ""
+
+  defp mention_user(user) do
+    "@#{user}: "
+  end
 
   defp new_message(text) do
     %Butler.Message{ text: text, channel: "terminal", user: "1337" }
@@ -50,4 +62,3 @@ defmodule Butler.Adapters.Console do
     "#{@bot_name}>"
   end
 end
-

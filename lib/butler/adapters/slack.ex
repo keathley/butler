@@ -72,4 +72,3 @@ defmodule Butler.Adapters.Slack do
   def format_response({:quote, msg}), do: {:ok, ">#{msg}"}
   def format_response(response), do: {:error, response}
 end
-

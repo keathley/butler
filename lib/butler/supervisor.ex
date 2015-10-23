@@ -11,8 +11,8 @@ defmodule Butler.Supervisor do
   def init({:ok}) do
     children = [
       worker(GenEvent, [[name: @manager]]),
-      worker(@adapter, []),
-      worker(Butler.Bot, [@manager])
+      supervisor(Task.Supervisor, [[name: Butler.PluginSupervisor]], restart: :temporary),
+      worker(@adapter, [])
     ]
 
     supervise(children, strategy: :one_for_one)
