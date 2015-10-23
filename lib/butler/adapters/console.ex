@@ -14,15 +14,6 @@ defmodule Butler.Adapters.Console do
     Supervisor.start_link(children, opts)
   end
 
-  def send_message({:reply, response}, _original) do
-    case format_response(response) do
-      {:ok, text} ->
-        IO.puts text
-      {:error, _} ->
-        Logger.error "Unknown response type: #{response.type}"
-    end
-  end
-
   def reply(resp) do
     IO.puts mention_user(resp.user) <> format_response(resp.text)
   end
