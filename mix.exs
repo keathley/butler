@@ -37,7 +37,6 @@ defmodule Butler.Mixfile do
       {:poison, "~> 1.5.0"},
       {:httpoison, "~> 0.7.4"},
       {:websocket_client, git: "http://github.com/jeremyong/websocket_client"},
-      {:butler_cowsay, "~> 0.1.0"},
       {:ex_spec, "~> 0.3.0", only: :test}
     ]
   end
