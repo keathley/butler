@@ -6,14 +6,20 @@ defmodule Butler.Response do
   @type channel :: binary
   @type text    :: binary | nil
   @type user    :: binary
+  @type type    :: binary
 
   @type t :: %__MODULE__{
     channel: channel,
     text:    text,
-    user:    user
+    user:    user,
+    type:    type
   }
+
+  @derive [Poison.Encoder]
 
   defstruct channel: nil,
             text: nil,
-            user: nil
+            user: nil,
+            type: nil
 end
+

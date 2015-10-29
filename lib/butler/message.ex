@@ -6,6 +6,7 @@ defmodule Butler.Message do
   incoming message. This message is passed from adapters to plugins and provides
   all of the necesary information for plugins to respond correctly.
   """
+  @adapter Application.get_env(:butler, :adapter)
 
   @type adapter :: {module, term}
   @type channel :: binary
@@ -21,7 +22,7 @@ defmodule Butler.Message do
     user:    user
   }
 
-  defstruct adapter: {Butler.Adapter, nil},
+  defstruct adapter: {@adapter, nil},
             channel: nil,
             user: nil,
             text: nil,
