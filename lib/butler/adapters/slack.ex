@@ -1,9 +1,9 @@
 defmodule Butler.Adapters.Slack do
-  require Logger
+  use Butler.Adapter
 
   @behaviour :websocket_client_handler
 
-  def start_link(_opts \\ []) do
+  def start_link do
     {:ok, json} = Butler.Adapters.Slack.Rtm.start
     url = String.to_char_list(json["url"])
     {:ok, pid} = :websocket_client.start_link(url, __MODULE__, json)
@@ -11,11 +11,13 @@ defmodule Butler.Adapters.Slack do
     {:ok, pid}
   end
 
-  def send_message(response, original) do
-    send(__MODULE__, {:respond, response, original})
+  def reply(resp) do
+    send(__MODULE__, {:reply, resp})
   end
 
-  # Server callbacks
+  def say(resp) do
+    send(__MODULE__, {:say, resp})
+  end
 
   def init(json, socket) do
     slack = %{
@@ -30,16 +32,25 @@ defmodule Butler.Adapters.Slack do
     {:ok, %{slack: slack}}
   end
 
-  def websocket_info({:respond, text, original}, _connection, state) do
-    case format_response(text) do
-      {:ok, text} ->
-        response = %{text: text, channel: original.channel, type: "message"}
-        json = Poison.encode!(response)
-        {:reply, {:text, json}, state}
-      {:error, _} ->
-        Logger.error "Unknown response type"
-        {:noreply, state}
-    end
+  def websocket_info({:reply, resp}, _connection, state) do
+    json =
+      resp
+      |> add_message_type
+      |> format_response
+      |> mention_user
+      |> Poison.encode!
+
+    {:reply, {:text, json}, state}
+  end
+
+  def websocket_info({:say, resp}, _connection, state) do
+    json =
+      resp
+      |> add_message_type
+      |> format_response
+      |> Poison.encode!
+
+    {:reply, {:text, json}, state}
   end
 
   def websocket_handle({:ping, msg}, _connection, state) do
@@ -51,7 +62,10 @@ defmodule Butler.Adapters.Slack do
 
     case message do
       %{type: "message"} ->
-        Butler.Bot.notify(message)
+        message
+        |> replace_id_with_botname(state.slack.me)
+        |> format_username(state)
+        |> Butler.Bot.notify
       _                  ->
         Logger.warn "unhandled message type: #{message.type}"
     end
@@ -64,12 +78,48 @@ defmodule Butler.Adapters.Slack do
     {:error, state}
   end
 
-  def format_response(msg) when is_binary(msg) do
-    format_response({:text, msg})
-  end
-  def format_response({:code, msg}),  do: {:ok, "```#{msg}```"}
-  def format_response({:text, msg}),  do: {:ok, "#{msg}"}
-  def format_response({:quote, msg}), do: {:ok, ">#{msg}"}
-  def format_response(response), do: {:error, response}
-end
+  def format_response(%Butler.Response{}=resp) do
+    text = case resp.text do
+      {:code, msg} -> "```#{msg}```"
+      {:text, msg} -> "#{msg}"
+      {:quote, msg} -> ">#{msg}"
+      _ -> resp.text
+    end
 
+    %Butler.Response{resp | text: text}
+  end
+
+  defp replace_id_with_botname(%Butler.Message{}=msg, bot) do
+    regex = Regex.compile!("<@#{bot["id"]}>(.*)")
+    text = Regex.replace(regex, msg.text, "@#{bot["name"]}\\1")
+
+    %Butler.Message{msg | text: text}
+  end
+
+  defp find_by_id(users, id) do
+    users
+    |> Enum.find(fn(user) -> user["id"] == id end)
+  end
+
+  defp format_username(%Butler.Message{}=msg, state) do
+    name =
+      state.slack.users
+      |> find_by_id(msg.user)
+      |> user_name
+
+    %Butler.Message{msg | user: name}
+  end
+
+  defp user_name(user) do
+    user["name"]
+  end
+
+  defp add_message_type(resp) do
+    %Butler.Response{resp | type: "message"}
+  end
+
+  defp mention_user(%Butler.Response{} = resp) do
+    new_text = "@#{resp.user}: #{resp.text}"
+    %Butler.Response{resp | text: new_text}
+  end
+end

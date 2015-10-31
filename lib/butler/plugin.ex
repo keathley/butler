@@ -3,77 +3,112 @@ defmodule Butler.Plugin do
   Defines a Plugin.
   """
 
-  use Behaviour
-
-  @doc """
-  Called for any messages that come through the bot.
-  """
-  defcallback hear(msg :: String.t, state :: any) ::
-              {:noreply, state :: any} |
-              {:reply, {:text, String.t}, state :: any} |
-              {:reply, {:code, String.t}, state :: any} |
-              {:reply, {:quote, String.t}, state :: any}|
-              {:reply, String.t, state :: any}
-
-  @doc """
-  Called for any messages that starts with the bot's name.
-  """
-  defcallback respond(msg :: String.t, state :: any) ::
-              {:noreply, state :: any} |
-              {:reply, {:text, String.t}, state :: any} |
-              {:reply, {:code, String.t}, state :: any} |
-              {:reply, {:quote, String.t}, state :: any}|
-              {:reply, String.t, state :: any}
-
   @doc false
   defmacro __using__(_opts) do
     quote do
-      @behaviour unquote(__MODULE__)
+      import unquote(__MODULE__)
+      import Butler.Plugin.Responders
+
+      Module.register_attribute __MODULE__, :responders, accumulate: true
+      Module.register_attribute __MODULE__, :hearers, accumulate: true
+
       @before_compile unquote(__MODULE__)
-      @bot_name Application.get_env(:butler, :name)
 
-      use GenEvent
-
-      require Logger
-
-      def handle_event({:message, %{text: text} = original}, state) do
-        response = send_response_to_plugin(text, state)
-        {:ok, state} = handle_response(response, original)
+      def call_plugin({fn_name, regex}, msg) do
+        apply(__MODULE__, fn_name, [msg, Regex.run(regex, msg.text)])
       end
-
-
-      defp send_response_to_plugin(text, state) do
-        case bot_mentioned?(text) do
-          true -> strip_name(text) |> respond(state)
-          _    -> hear(text, state)
-        end
-      end
-
-      defp bot_mentioned?(text) do
-        name = @bot_name |> String.downcase
-        [first | _] = String.split(text)
-        first |> String.downcase |> String.contains?(name)
-      end
-
-      defp strip_name(text) do
-        [_ | msg] = String.split(text)
-        Enum.join(msg, " ")
-      end
-
-      defp handle_response({:reply, response, state}, original) do
-        Butler.Bot.respond({response, original})
-        {:ok, state}
-      end
-
-      defp handle_response({:noreply, state}, original), do: {:ok, state}
     end
   end
 
   defmacro __before_compile__(_env) do
     quote do
-      def hear(_msg, state), do: {:noreply, state}
-      def respond(_msg, state), do: {:noreply, state}
+      def notify(msg) do
+        if handler = find_handler(msg) do
+          call_plugin(handler, msg)
+        end
+      end
+
+      defp find_handler(msg) do
+        Enum.find(handlers, &(matches_regex?(&1, msg)))
+      end
+
+      defp matches_regex?({_func, regex}, msg) do
+        Regex.match?(regex, msg.text)
+      end
+
+      defp handlers do
+        @responders ++ @hearers
+      end
     end
   end
-end
 
+  defmacro respond({:sigil_r, _, pattern}, conn, captures, do: block) do
+    fn_name = name(pattern)
+    regex = respond_regex(pattern) |> Macro.escape
+
+    quote do
+      @responders {unquote(fn_name), unquote(regex)}
+      def unquote(fn_name)(unquote(conn), unquote(captures)) do
+        unquote(block)
+      end
+    end
+  end
+
+  defmacro respond({:sigil_r, _, pattern}, conn, do: block) do
+    fn_name = name(pattern)
+    regex = respond_regex(pattern) |> Macro.escape
+
+    quote do
+      @responders {unquote(fn_name), unquote(regex)}
+      def unquote(fn_name)(unquote(conn), [_all]) do
+        unquote(block)
+      end
+    end
+  end
+
+  defmacro hear({:sigil_r, _, pattern}=regex, conn, do: block) do
+    fn_name = name(pattern)
+
+    quote do
+      @hearers {unquote(fn_name), unquote(regex)}
+      def unquote(fn_name)(unquote(conn), [_all]) do
+        unquote(block)
+      end
+    end
+  end
+
+  defmacro hear({:sigil_r, _, pattern}=regex, conn, captures, do: block) do
+    fn_name = name(pattern)
+
+    quote do
+      @hearers {unquote(fn_name), unquote(regex)}
+      def unquote(fn_name)(unquote(conn), unquote(captures)) do
+        unquote(block)
+      end
+    end
+  end
+
+  defp source([{:<<>>, _, [string]}, []]) do
+    string
+  end
+
+  defp name(pattern) do
+    pattern
+    |> source
+    |> String.to_atom
+  end
+
+  defp respond_regex(pattern) do
+    text = source(pattern)
+    ~r"#{bots_name_regex} #{text}"
+  end
+
+  defp bots_name do
+    Application.get_env(:butler, :name)
+  end
+
+  defp bots_name_regex do
+    {first_char, rest} = bots_name |> String.split_at 1
+    "@?(?i)#{first_char}(?-i)#{rest}:?"
+  end
+end

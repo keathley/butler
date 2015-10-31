@@ -1,12 +1,15 @@
 defmodule Butler.Plugins.TestCount do
   use Butler.Plugin
 
-  def respond("test count", tests) do
-    count = Enum.count(tests)
-    {:reply, "The count is #{count}", tests}
+  respond ~r/test count/, conn do
+    # count = Enum.count(tests)
+    count = 3
+    reply conn, "The count is #{count}"
   end
 
-  def hear("test", tests) do
-    {:noreply, ["test"|tests]}
+  hear ~r/test/, conn do
+    # ["test"|tests]
+    say conn, "I heard some tests"
+    say conn, "incrementing..."
   end
 end
