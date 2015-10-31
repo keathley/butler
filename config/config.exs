@@ -25,9 +25,7 @@ config :butler,
   name: System.get_env("BUTLER_NAME") || "Butler",
   adapter: Butler.Adapters.Console,
   plugins: [
-    {Butler.Plugins.Cowsay, []},
     {Butler.Plugins.TestCount, []}
   ]
 
 import_config "#{Mix.env}.exs"
-
