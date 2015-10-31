@@ -1,9 +1,9 @@
 defmodule Butler.Adapters.Console do
-  require Logger
+  use Butler.Adapter
 
   @bot_name Application.get_env(:butler, :name)
 
-  def start_link(_opts \\ []) do
+  def start_link do
     import Supervisor.Spec
 
     children = [

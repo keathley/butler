@@ -23,7 +23,6 @@ defmodule Butler.Plugin do
   defmacro __before_compile__(_env) do
     quote do
       def notify(msg) do
-        IO.inspect msg
         if handler = find_handler(msg) do
           call_plugin(handler, msg)
         end
