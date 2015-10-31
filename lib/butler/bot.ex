@@ -1,9 +1,8 @@
 defmodule Butler.Bot do
   @adapter Application.get_env(:butler, :adapter)
-  @plugins Application.get_env(:butler, :plugins)
 
   def notify(msg) do
-    @plugins
+    plugins
     |> Enum.each(fn(plugin) -> notify_plugin(plugin, msg) end)
   end
 
@@ -17,5 +16,9 @@ defmodule Butler.Bot do
 
   defp notify_plugin({plugin, _opts}, msg) do
     Task.Supervisor.start_child(Butler.PluginSupervisor, plugin, :notify, [msg])
+  end
+
+  defp plugins do
+    Application.get_env(:butler, :plugins)
   end
 end
