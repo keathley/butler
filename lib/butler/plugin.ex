@@ -104,7 +104,7 @@ defmodule Butler.Plugin do
   end
 
   defp bots_name do
-    Application.get_env(:butler, :name)
+    Butler.Bot.name
   end
 
   defp bots_name_regex do
