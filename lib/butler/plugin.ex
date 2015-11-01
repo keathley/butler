@@ -11,6 +11,7 @@ defmodule Butler.Plugin do
 
       Module.register_attribute __MODULE__, :responders, accumulate: true
       Module.register_attribute __MODULE__, :hearers, accumulate: true
+      Module.register_attribute __MODULE__, :usage, accumulate: true
 
       @before_compile unquote(__MODULE__)
 
@@ -22,6 +23,12 @@ defmodule Butler.Plugin do
 
   defmacro __before_compile__(_env) do
     quote do
+      def usage do
+        @usage
+        |> Enum.map(fn(usage) -> usage end)
+        |> Enum.reverse
+      end
+
       def notify(msg) do
         if handler = find_handler(msg) do
           call_plugin(handler, msg)

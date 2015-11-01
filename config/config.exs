@@ -25,6 +25,7 @@ config :butler,
   name: System.get_env("BUTLER_NAME") || "Butler",
   adapter: Butler.Adapters.Console,
   plugins: [
+    {Butler.Plugins.Help, []},
     {Butler.Plugins.TestCount, []}
   ]
 

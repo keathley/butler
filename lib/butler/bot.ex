@@ -17,7 +17,7 @@ defmodule Butler.Bot do
   end
 
   def plugins do
-    Application.get_env(:butler, :plugins)
+    Application.get_env(:butler, :plugins) || []
   end
 
   def adapter do
