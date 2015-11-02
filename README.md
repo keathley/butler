@@ -7,7 +7,7 @@ Butler is a simple slack bot designed to make your life easier.  He's a swell gu
 
 You can install the butler archive with this command:
 
-    $ mix archive.install https://github.com/butlerbot/butler/releases/download/v0.6.0/butler_new-0.6.0.ez
+    $ mix archive.install https://github.com/butlerbot/butler/releases/download/v0.6.1/butler_new-0.6.1.ez
 
 Once you've done that you can generate your robot. For instance, if you want
 to name your robot `marvin` then you would run:
@@ -98,4 +98,3 @@ release on your vps or server of choice.
 
 Butler is still a work in progress and we appreciate any contributions. If you
 have questions then feel free to open an issue.
-
