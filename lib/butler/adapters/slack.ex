@@ -62,11 +62,13 @@ defmodule Butler.Adapters.Slack do
 
     case message do
       %{type: "message"} ->
-        message
-        |> replace_id_with_botname(state.slack.me)
-        |> format_username(state)
-        |> Butler.Bot.notify
-      _                  ->
+        unless sent_from_self?(message, state) do
+          message
+          |> replace_id_with_botname(state.slack.me)
+          |> format_username(state)
+          |> Butler.Bot.notify
+        end
+        _                ->
         Logger.warn "unhandled message type: #{message.type}"
     end
 
@@ -87,6 +89,10 @@ defmodule Butler.Adapters.Slack do
     end
 
     %Butler.Response{resp | text: text}
+  end
+
+  defp sent_from_self?(message, state) do
+    message.user == state.slack.me["id"]
   end
 
   defp replace_id_with_botname(%Butler.Message{}=msg, bot) do
