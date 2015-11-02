@@ -26,18 +26,18 @@ defmodule Butler do
   Butler. Plugins listen to events emitted by Butler and can choose to respond
   or not. Here is an example plugin:
 
-    defmodule TestCount do
-      use Butler.Plugin
+  defmodule Butler.Plugins.TestCount do
+    use Butler.Plugin
 
-      def respond("test count", tests) do
-        count = Enum.count(tests)
-        {:reply, "The count is #{count}", tests}
-      end
-
-      def hear("test", tests) do
-        {:noreply, ["test"|tests]}
-      end
+    respond ~r/test count/, conn do
+      count = Butler.Bot.get(:test_count)
+      reply conn, "The count is #{count}"
     end
+
+    hear ~r/test/, conn do
+      say conn, "I heard some tests"
+    end
+  end
 
   If you want to read more about creating your own plugins in `Butler.Plugin`.
   """
