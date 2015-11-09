@@ -5,13 +5,11 @@ defmodule <%= mod_name %>.Example do
   replies to the user with an echo
   """
   respond ~r/echo (.*)/, conn, [_all, say] do
-
-    reply conn, "\necho: #{say}"
+    reply conn, "echoing: #{say}"
   end
 
-
   @usage """
-  listens for a ping and broadcasts a pong
+  hears ping, says pong
   """
   hear ~r/ping/, conn do
     # ["test"|tests]
