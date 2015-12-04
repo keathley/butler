@@ -1,8 +1,6 @@
 defmodule Butler.Adapters.Console do
   use Butler.Adapter
 
-  @bot_name Application.get_env(:butler, :name)
-
   def start_link do
     import Supervisor.Spec
 
@@ -50,6 +48,6 @@ defmodule Butler.Adapters.Console do
   end
 
   defp prompt do
-    "#{@bot_name}>"
+    "#{Butler.Bot.name}>"
   end
 end
