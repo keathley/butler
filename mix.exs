@@ -46,6 +46,6 @@ defmodule Butler.Mixfile do
   defp package do
     [maintainers: ["Chris Keathley"],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/butlerbot/butler"}]
+      links: %{github: "https://github.com/keathley/butler"}]
   end
 end
