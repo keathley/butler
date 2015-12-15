@@ -3,6 +3,7 @@
   "butler_cowsay": {:hex, :butler_cowsay, "0.1.0"},
   "conform": {:hex, :conform, "0.16.0"},
   "cowsay": {:hex, :cowsay, "0.0.1"},
+  "dialyze": {:hex, :dialyze, "0.2.0"},
   "earmark": {:hex, :earmark, "0.1.19"},
   "erlware_commons": {:hex, :erlware_commons, "0.15.0"},
   "ex_doc": {:hex, :ex_doc, "0.10.0"},

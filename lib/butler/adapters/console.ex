@@ -13,11 +13,16 @@ defmodule Butler.Adapters.Console do
   end
 
   def reply(resp) do
-    IO.puts mention_user(resp.user) <> format_response(resp.text)
+    resp
+    |> format_response
+    |> mention_user
+    |> IO.puts
   end
 
   def say(resp) do
-    IO.puts format_response(resp.text)
+    resp
+    |> format_response
+    |> IO.puts
   end
 
   def accept do
@@ -31,16 +36,21 @@ defmodule Butler.Adapters.Console do
     accept
   end
 
-  def format_response(msg) when is_binary(msg) do
-    format_response({:text, msg})
+  def format_response(%Butler.Message{text: {:code, msg}}=resp) do
+    %Butler.Message{resp | text: "\n#{msg}"}
   end
-  def format_response({:code, msg}),  do: "\n#{msg}"
-  def format_response({:text, msg}),  do: "#{msg}"
-  def format_response({:quote, msg}), do: ">#{msg}"
-  def format_response(_), do: ""
+  def format_response(%Butler.Message{text: {:text, msg}}=resp) do
+    %Butler.Message{resp | text: "#{msg}"}
+  end
+  def format_response(%Butler.Message{text: {:quote, msg}}=resp) do
+    %Butler.Message{resp | text: ">#{msg}"}
+  end
+  def format_response(%Butler.Message{text: text}=resp) when is_binary(text) do
+    resp
+  end
 
-  defp mention_user(user) do
-    "@#{user}: "
+  defp mention_user(%Butler.Message{user: user, text: text}=resp) do
+    %Butler.Message{resp | text: "@#{user}#{text}"}
   end
 
   defp new_message(text) do

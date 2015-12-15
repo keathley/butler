@@ -6,25 +6,30 @@ defmodule Butler.Message do
   incoming message. This message is passed from adapters to plugins and provides
   all of the necesary information for plugins to respond correctly.
   """
-  @adapter Application.get_env(:butler, :adapter)
-
-  @type adapter :: {module, term}
+  @type text    :: {atom, String.t}
+                 | String.t
+                 | nil
   @type channel :: binary
-  @type text    :: binary | nil
   @type type    :: binary
   @type user    :: binary
 
   @type t :: %__MODULE__{
-    adapter: adapter,
     channel: channel,
     text:    text,
     type:    type,
     user:    user
   }
 
-  defstruct adapter: {@adapter, nil},
-            channel: nil,
+  @derive [Poison.Encoder]
+
+  defstruct channel: nil,
             user: nil,
             text: nil,
             type: nil
+end
+
+defimpl String.Chars, for: Butler.Message do
+  def to_string(%Butler.Message{text: text}) do
+    text
+  end
 end
