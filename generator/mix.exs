@@ -4,7 +4,7 @@ defmodule Butler.New.Mixfile do
   def project do
     [
       app: :butler_new,
-      version: "0.6.2",
+      version: "0.7.0",
       elixir: "~> 1.1.0"
     ]
   end
