@@ -6,15 +6,18 @@ defmodule Butler.Plugins.Help do
   use Butler.Plugin
 
   @usage """
-  butler help - Returns the helps messages for all the installed plugins
+  #{name} help - Returns the helps messages for all the installed plugins
   """
   respond ~r/help/, conn do
-    usages =
-      Butler.Bot.plugins
-      |> Enum.map(fn({plugin, _opts}) -> plugin end)
-      |> Enum.flat_map(fn(plugin) -> plugin.usage end)
-      |> Enum.join
+    conn
+    |> reply usages
+  end
 
-    reply conn, code(usages)
+  defp usages do
+    Butler.Bot.plugins
+    |> Enum.map(fn({plugin, _opts}) -> plugin end)
+    |> Enum.flat_map(fn(plugin) -> plugin.usage end)
+    |> Enum.join
+    |> code
   end
 end

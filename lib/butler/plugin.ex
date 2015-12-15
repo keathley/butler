@@ -8,6 +8,7 @@ defmodule Butler.Plugin do
     quote do
       import unquote(__MODULE__)
       import Butler.Plugin.Responders
+      import Butler.Bot, only: [name: 0]
 
       Module.register_attribute __MODULE__, :responders, accumulate: true
       Module.register_attribute __MODULE__, :hearers, accumulate: true

@@ -5,7 +5,7 @@ defmodule Butler.Plugins.TestCount do
   use Butler.Plugin
 
   @usage """
-  butler test count - Returns the number of times 'test' has been said
+  #{name} test count - Returns the number of times 'test' has been said
   """
   respond ~r/test count/, conn do
     # count = Enum.count(tests)

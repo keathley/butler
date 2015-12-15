@@ -1,21 +1,19 @@
 defmodule Butler.Adapters.NullAdapter do
-  def start_link(_opts \\ []) do
-    {:ok, []}
+  @behaviour Butler.Adapter
+
+  use GenServer
+
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, :ok, opts)
   end
 
   def reply(_resp) do
-    nil
+    :ok
   end
 
   def say(_resp) do
-    nil
+    :ok
   end
-
-  def format_response(msg) when is_binary(msg) do
-    format_response({:text, msg})
-  end
-  def format_response({:code, msg}),  do: "\n#{msg}"
-  def format_response({:text, msg}),  do: "#{msg}"
-  def format_response({:quote, msg}), do: ">#{msg}"
-  def format_response(_), do: ""
+  
+  def format_response(%Butler.Message{}=resp), do: resp
 end

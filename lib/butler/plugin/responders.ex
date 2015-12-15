@@ -1,7 +1,4 @@
 defmodule Butler.Plugin.Responders do
-  def text(msg)  when is_binary(msg), do: {:text, msg}
-  def code(msg)  when is_binary(msg), do: {:code, msg}
-  def emote(msg) when is_binary(msg), do: {:emote, msg}
   @type conn :: %Butler.Message{}
 
   @spec text(Butler.Message.text) :: Butler.Message.text
@@ -16,19 +13,20 @@ defmodule Butler.Plugin.Responders do
   def emote(msg) when is_binary(msg), do: {:emote, msg}
   def emote(msg), do: msg
 
-  @spec reply(conn, String.t) :: nil
-  def reply(conn, text) do
+  @spec reply(conn, Butler.Message.text) :: nil
+  def reply(conn, text, bot \\ Butler.Bot) do
     response(conn, text)
-    |> Butler.Bot.reply
+    |> bot.reply
   end
 
-  @spec say(conn, String.t) :: nil
-  def say(conn, text) do
+  @spec say(conn, Butler.Message.text) :: nil
+  def say(conn, text, bot \\ Butler.Bot) do
     response(conn, text)
-    |> Butler.Bot.say
+    |> bot.say
   end
 
+  @spec response(conn, Butler.Message.text) :: Butler.Message.t
   defp response(conn, text) do
-    %Butler.Response{user: conn.user, channel: conn.channel, text: text}
+    %Butler.Message{conn | text: text}
   end
 end
