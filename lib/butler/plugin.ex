@@ -49,7 +49,7 @@ defmodule Butler.Plugin do
     end
   end
 
-  defmacro respond({:sigil_r, _, pattern}, conn, captures, do: block) do
+  defmacro respond({:sigil_r, _, pattern}, captures, conn,  do: block) do
     fn_name = name(pattern)
     regex = respond_regex(pattern) |> Macro.escape
 
@@ -84,7 +84,7 @@ defmodule Butler.Plugin do
     end
   end
 
-  defmacro hear({:sigil_r, _, pattern}=regex, conn, captures, do: block) do
+  defmacro hear({:sigil_r, _, pattern}=regex, captures, conn, do: block) do
     fn_name = name(pattern)
 
     quote do
