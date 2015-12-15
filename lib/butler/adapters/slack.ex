@@ -1,7 +1,8 @@
 defmodule Butler.Adapters.Slack do
-  use Butler.Adapter
-
+  @behaviour Butler.Adapter
   @behaviour :websocket_client_handler
+
+  import Logger
 
   def start_link do
     {:ok, json} = Butler.Adapters.Slack.Rtm.start

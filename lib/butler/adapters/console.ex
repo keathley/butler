@@ -1,5 +1,5 @@
 defmodule Butler.Adapters.Console do
-  use Butler.Adapter
+  @behaviour Butler.Adapter
 
   def start_link do
     import Supervisor.Spec
