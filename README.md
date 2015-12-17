@@ -9,7 +9,7 @@ Butler is an extendable, chat robot designed to make your life easier.  He's a s
 
 You can install the butler archive with this command:
 
-    $ mix archive.install https://github.com/butlerbot/butler/releases/download/v0.7.0/butler_new-0.7.0.ez
+    $ mix archive.install https://github.com/butlerbot/butler/releases/download/v0.7.1/butler_new-0.7.1.ez
 
 Once you've done that you can generate your robot. For instance, if you want
 to name your robot `marvin` then you would run:
