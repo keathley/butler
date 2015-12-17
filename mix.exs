@@ -1,16 +1,25 @@
 defmodule Butler.Mixfile do
   use Mix.Project
 
+  @version "0.7.0"
+
   def project do
     [app: :butler,
      description: "A simple elixir robot to help you get things done",
-     version: "0.7.0",
+     version: @version,
+     name: "Butler",
+     source_url: "https://github.com/keathley/butler",
      elixir: "~> 1.1.0",
      escript: [main_module: Butler],
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      package: package,
-     deps: deps]
+     deps: deps,
+     docs: [extras: ["README.md"],
+            source_ref: "v#{@version}",
+            source_url: "https://github.com/keathley/butler",
+            main: "extra-readme"]
+   ]
   end
 
   # Configuration for the OTP application

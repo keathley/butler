@@ -1,6 +1,55 @@
 defmodule Butler.Plugin do
   @moduledoc """
-  Defines a Plugin.
+  Plugins give Butler abilities.
+
+  ## Hearing and Responding
+
+  There are 2 ways of listening to incoming messages. Butler can either `hear` a message
+  in a room or `respond` to messages addressed to it. Both macros take a regex as their first argument,
+  an optional list of regex matches, and then a connection struct. The connection contains all of the data
+  about the original message (which channel it came from, who sent it) as well as information about the
+  chat environment.
+
+  ```elixir
+  defmodule MyPlugin do
+    use Butler.Plugin
+
+    @usage "\#{name} test <phrase> - Lets the user know that they got the message"
+    respond(~r/test (.*)$/, [_all, phrase], conn) do
+      reply conn, "I heard \#{phrase}"
+    end
+
+    @usage "lambda - expresses a love for lambdas to the channel"
+    hear(~r/lambda/, conn) do
+      say conn, "lambda all the things"
+    end
+  end
+  ```
+
+
+  ## Saying and Replying
+
+  Butler can either reply to the sender of the original message with `reply` or broadcast a
+  message back to the channel with `say`.
+
+  ## Formatting responses
+
+  Its often the case that you'll need to format a response, for instance marking a response as code.
+  This is easy to do with Butler's formatters. These formatters are based on the specific adapter being used.
+
+  ```elixir
+    respond ~r/codeme (.*)$/, [_all, phrase], conn do
+      reply conn, code(phrase) # returns the message as code
+    end
+
+    respond ~r/textme (.*)$/, [_all, phrase], conn do
+      reply conn, text(phrase) # returns the message as text
+    end
+
+    respond ~r/emoteme (.*)$/, [_all, phrase], conn do
+      reply conn, emote(phrase) # returns the message as an emote
+    end
+  ```
   """
 
   @doc false

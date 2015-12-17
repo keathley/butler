@@ -1,7 +1,9 @@
 Butler
 ======
 
-Butler is a simple slack bot designed to make your life easier.  He's a swell guy.
+Butler is an extendable, chat robot designed to make your life easier.  He's a swell guy.
+
+[Butler's full documentation is available online](http://hexdocs.pm/butler)
 
 ## Creating your own Butler
 
@@ -21,10 +23,43 @@ Congratulations! You now have your own butler.
 
 Butler comes with a default configuration, which can be updated in `config/config.exs` or `config/ENV.exs` per environment.
 
-### Plugins
+## Plugins - Hello World
 
-Plugins give Butler abilities. They provide a simple api for listening for
-specific commands.
+Butler's abilities come from plugins:
+
+```elixir
+defmodule MyPlugin do
+  use Butler.Plugin
+
+  @usage """
+  #{name} test <phrase> - Lets the user know that they got the message
+  """
+  respond(~r/test (.*)$/, [_all, phrase], conn) do
+    reply conn, "I heard #{phrase}"
+  end
+
+  @usage """
+  lambda - expresses a love for lambdas to the channel
+  """
+  hear(~r/lambda/, conn) do
+    say conn, "lambda all the things"
+  end
+end
+```
+
+You can include these plugins inside any butler project by updating your config like so:
+
+```elixir
+config :butler,
+  name: ...,
+  adapter: ...,
+  plugins: [
+    {Butler.Plugins.Help, []},
+    {MyPlugin, []}
+  ]
+```
+
+There are other plugins available on hex that can be easily included into your bot.
 
 ### Adapters
 

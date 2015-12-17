@@ -26,18 +26,21 @@ defmodule Butler do
   Butler. Plugins listen to events emitted by Butler and can choose to respond
   or not. Here is an example plugin:
 
-  defmodule Butler.Plugins.TestCount do
+```elixir
+  defmodule MyPlugin do
     use Butler.Plugin
 
-    respond ~r/test count/, conn do
-      count = Butler.Bot.get(:test_count)
-      reply conn, "The count is #{count}"
+    @usage "#{name} test <phrase> - Lets the user know that they got the message"
+    respond(~r/test (.*)$/, [_all, phrase], conn) do
+      reply conn, "I heard #{phrase}"
     end
 
-    hear ~r/test/, conn do
-      say conn, "I heard some tests"
+    @usage "lambda - expresses a love for lambdas to the channel"
+    hear(~r/lambda/, conn) do
+      say conn, "lambda all the things"
     end
   end
+```
 
   If you want to read more about creating your own plugins in `Butler.Plugin`.
   """
